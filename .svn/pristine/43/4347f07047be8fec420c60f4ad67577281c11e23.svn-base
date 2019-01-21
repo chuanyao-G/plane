@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" href="dahuiji.css" />
+	<script>
+	window.onload = function(){
+		new Engine();
+	}
+	//创建引擎
+	function Engine(){
+		//实例属性
+		this.ele = document.getElementById("body_main"); //获取到引擎
+		this.init();
+	}
+	//原型方法
+	Engine.prototype.init = function(){
+		//获取所有的li选项
+		var olis = this.ele.children[0].children;
+		var that = this;
+		//遍历添加点击事件
+		for(var i = 0,len = olis.length;i < len;i ++){
+			//记录当前下标
+			olis[i].index = i;
+			olis[i].onclick = function(){
+				this.parentNode.remove(); //删除节点
+				that.loadPage();
+				that.frequency = this.index; //记录游戏难度
+			}
+		}
+	}
+	Engine.prototype.loadPage = function(){
+		var that = this;
+		//创建logo
+		var logo = createEle('div','logo');
+		//添加 logo
+		appendBody(logo);
+		//创建loading
+		var loading = createEle('div','loading');
+		//添加loading
+		appendBody(loading);
+		var index = 1;
+		//loading动画
+		var loadingTimer = setInterval(function(){
+			loading.style.background = 'url(images/loading' + (index ++ % 3 + 1) + '.png) no-repeat'
+		},500)
+		//页面背景动画
+		var positionY = 1;
+		setInterval(function(){
+			that.ele.style.backgroundPositionY = positionY ++ + 'px';
+		},50)
+		//清场
+		setTimeout(function(){
+			logo.remove();
+			loading.remove();
+			clearInterval(loadingTimer);
+			that.gameStart();
+		},3000)
+	}
+	Engine.prototype.gameStart = function(){
+		//我方飞机登场
+		Plane.init();
+		//我方飞机开火
+		Plane.fire(this.frequency)
+		//创建敌机
+		
+	}
+	
+	//我方飞机
+	var Plane = {
+		//创建飞机
+		ele : createEle('div','my-warplain'),
+		init : function(){
+			//添加到页面
+			appendBody(this.ele);
+			//定位我方飞机
+			this.ele.style.left = document.documentElement.clientWidth / 2 - this.ele.offsetWidth / 2 + 'px';
+			this.ele.style.top = document.documentElement.clientHeight - this.ele.offsetHeight + 'px';
+			this.fly();
+		},
+		fly : function(){
+			var that = this; //记录this
+			//获取引擎
+			var bodyMain = document.getElementById("body_main");
+			document.onmousemove = function(evt){
+				var e = evt || window.event;
+				var left = e.pageX - that.ele.offsetWidth / 2;
+				if(left <= bodyMain.offsetLeft){
+					left = bodyMain.offsetLeft;
+				}else if(left >= bodyMain.offsetLeft + bodyMain.offsetWidth - that.ele.offsetWidth){
+					left = bodyMain.offsetLeft + bodyMain.offsetWidth - that.ele.offsetWidth;
+				}
+				that.ele.style.left = left + 'px';
+				that.ele.style.top = e.pageY - that.ele.offsetHeight / 2 + 'px';
+			}
+		},
+		fire : function(frequency){
+			var that = this;
+			var defaultFrequency = 200;
+			//设置开火频率
+			switch(frequency){
+				case 0 : defaultFrequency = 500; break;
+				case 1 : defaultFrequency = 400;break;
+				case 2 : defaultFrequency = 200;break;
+				case 3 : defaultFrequency = 50;break;
+			}
+			var id = 1; //设置子弹编号
+			setInterval(function(){
+				that.bullet.push(new Bullet(id)); //创建子弹并加入数组
+				id ++;
+			},defaultFrequency)
+		},
+		bullet : []
+	}
+	
+	//创建子弹
+	function Bullet(id){
+		
+	}
+	//工具
+	Element.prototype.remove = function(){
+		this.parentNode.removeChild(this);
+	}
+	//创建节点
+	function createEle(tagName,className){
+		var ele = document.createElement(tagName);
+		ele.className = className;
+		return ele;
+	}
+	//添加节点
+	function appendBody(ele){
+		document.body.appendChild(ele);
+	}
+	</script>
+
+</head>
+<body>
+	<div id="body_main" class="main">
+			<ul id="options" class="options">
+				<li value="1">超级困难</li>
+				<li value="2">非常困难</li>
+				<li value="3">比较困难</li>
+				<li value="4">就选我吧</li>
+			</ul>
+	</div>
+</body>
+</html>
